@@ -13,7 +13,6 @@ import tempfile
 from dataclasses import dataclass, field
 from typing import Dict, Literal
 
-from core.converter import Converter
 
 # Support running as "python mathcha2tikz/cli.py" and as a package module.
 if __package__ in (None, ""):
@@ -97,18 +96,6 @@ def show_intro() -> None:
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
     print(intro, file=sys.stderr)
-
-
- 
-
-
- 
-
-
- 
-
-
- 
 
 
 def run_conversion(input_text: str, mode: str, context: CLIContext) -> int:
