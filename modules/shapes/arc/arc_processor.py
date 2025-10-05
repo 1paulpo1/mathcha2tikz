@@ -5,7 +5,7 @@ import logging
 
 from core.exceptions import ProcessingError
 from core.shape_payload import ShapePayload
-from modules.shapes.lines.shared_arrow_logic import Point, parse_points_from_draw
+from modules.shapes.lines.shared_arrow_logic import Point, parse_points_from_draw, extract_arrow_anchor
 from .arc_parser import ArcParser, ArcStyles
 from .arc_renderer import ArcRenderer
 from .arc_arrows import process_arc_arrows, ArcArrowData, ArcArrowResult
@@ -65,9 +65,38 @@ class ArcProcessor:
         segments: List[List[Point]],
         arrow_commands: List[str],
     ) -> ArcArrowResult:
+        # Build arrow_info by parsing auxiliary arrow commands
+        arrow_info: Dict[str, Dict[str, float]] = {}
+
+        try:
+            if segments:
+                start_pt = segments[0][0]
+                end_pt = segments[-1][-1]
+            else:
+                start_pt = end_pt = (0.0, 0.0)
+
+            for cmd in arrow_commands or []:
+                anchor = extract_arrow_anchor(cmd)
+                if not anchor:
+                    continue
+                ax, ay = anchor.position
+                # Choose closest endpoint
+                ds = (start_pt[0] - ax) ** 2 + (start_pt[1] - ay) ** 2
+                de = (end_pt[0] - ax) ** 2 + (end_pt[1] - ay) ** 2
+                if ds <= de:
+                    # Assign to start if not set yet
+                    if 'start' not in arrow_info:
+                        arrow_info['start'] = {'rotation': float(anchor.rotation)}
+                else:
+                    if 'end' not in arrow_info:
+                        arrow_info['end'] = {'rotation': float(anchor.rotation)}
+        except Exception:
+            # Fail-safe: no arrows
+            arrow_info = {}
+
         data: ArcArrowData = {
             'segments': tuple(tuple(seg) for seg in segments),
-            'arrow_info': {},
+            'arrow_info': arrow_info,  # may be empty
         }
         return process_arc_arrows(data)
 

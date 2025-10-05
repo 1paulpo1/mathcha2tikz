@@ -27,7 +27,21 @@ class ArcRenderer:
         rotation = float(data.get('rotation', 0.0) or 0.0)
 
         style_str = self._style_from_dict(data.get('styles', {}) or {})
-        style_str = apply_arrow_styles(style_str, data.get('arrows', {}) or {})
+
+        # Normalize arrows info keys to what apply_arrow_styles expects
+        arrows = data.get('arrows', {}) or {}
+        if arrows:
+            normalized_arrows = {}
+            # Support both {'start_arrow','end_arrow'} and {'start','end'}
+            if 'start_arrow' in arrows or 'start' in arrows:
+                normalized_arrows['start_arrow'] = arrows.get('start_arrow', arrows.get('start'))
+            if 'end_arrow' in arrows or 'end' in arrows:
+                normalized_arrows['end_arrow'] = arrows.get('end_arrow', arrows.get('end'))
+            if 'mid_arrows' in arrows:
+                normalized_arrows['mid_arrows'] = arrows.get('mid_arrows')
+            style_str = apply_arrow_styles(style_str, normalized_arrows)
+        else:
+            style_str = apply_arrow_styles(style_str, {})
 
         if abs(rotation) >= 0.5:
             rot_part = f"rotate around = {{{self._fmt_num(rotation)} : ({self._fmt_num(cx)}, {self._fmt_num(cy)})}}"

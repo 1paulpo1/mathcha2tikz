@@ -189,16 +189,20 @@ class GlobalRenderer:
                 if 'tikz_code' in shape_data:
                     tikz_code_parts.append(shape_data['tikz_code'])
                     continue
-                elif 'tikz' in shape_data:
+                if 'tikz' in shape_data:
                     tikz_code_parts.append(shape_data['tikz'])
                     continue
-                else:
-                    shape = shape_data.get('shape')
-                    styles = shape_data.get('styles', [])
+
+                shape = shape_data.get('shape')
+                styles = shape_data.get('styles', [])
+
+                if shape is None:
+                    # Treat dict itself as the shape payload (e.g. ellipse output)
+                    shape = shape_data
             else:
                 shape = shape_data
                 styles = getattr(shape, 'styles', [])
-            
+
             if shape is None:
                 continue
                 
