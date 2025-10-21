@@ -3,12 +3,43 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import tempfile
 
 logger = logging.getLogger('mathcha2tikz.cli_io')
+
+
+def _is_wsl() -> bool:
+    """Detect if running under Windows Subsystem for Linux (WSL)."""
+    try:
+        rel = platform.release().lower()
+        if 'microsoft' in rel:
+            return True
+        with open('/proc/version', 'r', encoding='utf-8') as fh:
+            return 'microsoft' in fh.read().lower()
+    except Exception:
+        return False
+
+
+def _run_capture(cmd: list[str]) -> str:
+    """Run command and return stdout on success, else empty string."""
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return result.stdout
+    except Exception:
+        return ""
+
+
+def _run_send(cmd: list[str], text: str) -> bool:
+    """Run command with input text; return True on success."""
+    try:
+        subprocess.run(cmd, input=text, text=True, check=True)
+        return True
+    except Exception:
+        return False
 
 
 def get_stdin_input(prompt: str = "") -> str:
@@ -60,6 +91,16 @@ def get_clipboard_input() -> str:
     except Exception as exc:  # pragma: no cover - defensive
         logger.debug("Clipboard pyperclip read failed: %s", exc)
 
+    # WSL: use Windows clipboard tools from Linux environment
+    try:
+        if _is_wsl():
+            text = _run_capture(['powershell.exe', '-NoProfile', '-Command', 'Get-Clipboard'])
+            if text.strip():
+                logger.debug("Clipboard read via powershell.exe (WSL)")
+                return text
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.debug("WSL clipboard read failed: %s", exc)
+
     try:
         if sys.platform == "win32":
             result = subprocess.run(
@@ -77,6 +118,12 @@ def get_clipboard_input() -> str:
                 logger.debug("Clipboard read via pbpaste")
                 return result.stdout
         else:
+            # Wayland first
+            text = _run_capture(['wl-paste', '-n'])
+            if text.strip():
+                logger.debug("Clipboard read via wl-paste")
+                return text
+            # X11 fallbacks
             for cmd in [['xclip', '-selection', 'clipboard', '-o'], ['xsel', '--clipboard', '--output']]:
                 try:
                     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -109,6 +156,18 @@ def set_clipboard_output(text: str) -> bool:
     except Exception as exc:  # pragma: no cover - defensive
         logger.debug("Clipboard pyperclip copy failed: %s", exc)
 
+    # WSL: try Windows clipboard from Linux environment
+    try:
+        if _is_wsl():
+            if _run_send(['clip.exe'], text):
+                logger.debug("Clipboard write via clip.exe (WSL)")
+                return True
+            if _run_send(['powershell.exe', '-NoProfile', '-Command', 'Set-Clipboard'], text):
+                logger.debug("Clipboard write via powershell.exe (WSL)")
+                return True
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.debug("WSL clipboard write failed: %s", exc)
+
     try:
         if sys.platform == "win32":
             subprocess.run(
@@ -124,6 +183,11 @@ def set_clipboard_output(text: str) -> bool:
             logger.debug("Clipboard write via pbcopy")
             return True
         else:
+            # Wayland first
+            if _run_send(['wl-copy'], text):
+                logger.debug("Clipboard write via wl-copy")
+                return True
+            # X11 fallbacks
             for cmd in [['xclip', '-selection', 'clipboard'], ['xsel', '--clipboard', '--input']]:
                 try:
                     subprocess.run(cmd, input=text, text=True, check=True)

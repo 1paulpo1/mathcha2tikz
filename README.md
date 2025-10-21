@@ -16,19 +16,32 @@ Convert Mathcha-exported TikZ into clean, optimized TikZ. Supports multiple shap
 ## Quick Start
 
 ```bash
-# Install
-pip install -r requirements.txt
+# Install from the published package
+pip install mathcha2tikz
+
+# or, install from a local checkout (editable for development)
+pip install -e .
+# Optional clipboard helpers
+pip install "mathcha2tikz[clipboard]"
 
 # CLI (interactive clipboard flow included)
-python -m mathcha2tikz.cli        # preferred (package-aware)
-# or
-python mathcha2tikz/cli.py        # direct script (supported)
+mathcha2tikz --help
+# or, as a module
+python -m mathcha2tikz.CLI   # canonical
+# python -m mathcha2tikz.cli   # backward-compatible shim
 
 # Python API
-python -c "from core.main import convert; print(convert('\\draw (0,0)--(1,1);', mode='classic'))"
+python -c "from mathcha2tikz import convert; print(convert('\\draw (0,0)--(1,1);', mode='classic'))"
 ```
 
-## Examples
+### Clipboard support
+
+- **macOS**: built-in `pbpaste`/`pbcopy` used automatically
+- **Windows**: PowerShell `Get-Clipboard`/`Set-Clipboard` used automatically
+- **Linux (Wayland)**: install `wl-clipboard` (`wl-copy`/`wl-paste`)
+- **Linux (X11)**: install `xclip` or `xsel`
+- **WSL**: uses Windows clipboard via `clip.exe` / `powershell.exe`
+
 ![alt text](<docs/screenshots/Screenshot 2025-10-05 at 01.00.01.png>)
 Here are some realworld examples rendered in Obsidian mode:
 <details>
@@ -54,49 +67,60 @@ Here are some realworld examples rendered in Obsidian mode:
 
 Use `--mode classic` to switch.
 
-## Features (current)
+## Features
 
 - Shapes: Straight Lines, Curve Lines, Arc, Ellipse/Circle
 - Arrows: start/end, mid-arrows via decorations
 - Styles:
-  - Colors: post-processing via K-D tree for color search with O(log n) performance
-  - Opacity post-processing (removes draw opacity=1, preserves others)
-  - DashPattern post-processing (normalize, dedupe, exact-name conversion via dictionary)
+  - Colors: post-processing via K-D tree for color search with $O(\log N)$ performance
+  - Opacity post-processing (removes `draw opacity=1`, preserves others)
+  - Dash: post-processing (normalize, dedupe, exact-name conversion via dictionary)
 
 ## Architecture
 
+See `docs/WORKFLOW.md` for a deeper dive into the pipeline, typing contracts (`ShapePayload`), and extension points. Here is a shortened version for basic understanding
+
+
 The converter is broken into a modular pipeline (`Parser → Detector → Processor → Renderer → PostProcessor`).
 
-- **CLI split**: `mathcha2tikz/cli.py` (entry), `mathcha2tikz/cli_io.py` (clipboard/stdin/editor), `mathcha2tikz/commands.py` (convert commands), `mathcha2tikz/cli_menus.py` (interactive menus).
+- **CLI split**: `mathcha2tikz/CLI.py` (entry), `mathcha2tikz/io.py` (clipboard/stdin/editor), `mathcha2tikz/commands.py` (convert commands), `mathcha2tikz/menus.py` (interactive menus). `mathcha2tikz/cli.py` exists as a backward-compatibility shim.
 - **Lazy bootstrap**: processor and renderer registries are initialized on demand (`ensure_builtin_processors_registered()` / `ensure_builtin_renderers_registered()`), minimizing import side-effects and keeping CLI startup fast.
 - **Strict error handling**: processing/renderer stages raise `ProcessingError` / `RenderingError` on failures instead of hiding warnings, surfacing actionable diagnostics.
 - **Template engine**: output modes (`classic`, `obsidian`) are defined in `core/templates.py` via immutable template constants with dedicated post-processing.
 
-See `docs/WORKFLOW.md` for a deeper dive into the pipeline, typing contracts (`ShapePayload`), and extension points.
 
 ## CLI Flags
 
-- `--mode {classic,obsidian}`: choose output mode (default: obsidian)
+- `-m, --mode {classic,obsidian}`: choose output mode (default: obsidian)
+- `-f, --file <path>`: read input from file
+- `-c, --clipboard`: read input from clipboard
+- `-i, --interactive`: force interactive mode even with piped input
+- `--no-intro`: do not show intro banner
 - `--input-method {clipboard,paste,editor}`: quick-convert input source
 - `--debug`: enable debug logging
 - `--no-copy`: do not copy output to clipboard after conversion
 
 ## Roadmap
 
-- Auto-positioning of nodes
-- More shapes: snake, wave (prototypes ready; to be wired into pipeline)
-- Richer styles: pattern and fill
-- Dash patterns: extend dictionary; future nearest-match mapping when no exact match
+- [ ] Auto-positioning of nodes: attach nodes to nearest point
+- [ ] More shapes: snake, wave (prototypes ready; to be wired into pipeline soon)
+- [ ] Richer styles: pattern (see limitations section) and fill
+- [ ] Dash patterns: extend dictionary; future nearest-match mapping when no exact match
+- [ ] CLI enhancements: degub, module-toggle, etc.
+- [ ] Performance metrics: percentage of compression, processing time, etc.
 
 ## Known Limitations
 
+- Patterns are known to be not supported by Obsidian renderer (as well as many other libs). See [obsidian-tikzjax](https://github.com/artisticat1/obsidian-tikzjax) repository for more info
+- Tested on ~~macOS~~ UNIX-based system only
 - Module toggles and pipeline configuration menus are hidden for now
 - Per-module debug UI is hidden; only global debug toggle is available
-- Occasional instability; updates are infrequent
+- ~~Occasional instability while converting~~ unsupported shapes skipped and not affected
+- Updates are infrequent
 
 ## Acknowledgements
 
-- Special thanks to https://latexcolor.com/ for the LaTeX color table (≈700 colors) used in this project.
+- Special thanks to https://latexcolor.com/ for the LaTeX color table (>700 beautifully named colors) used in this project.
 
 ## Contributing & License
 

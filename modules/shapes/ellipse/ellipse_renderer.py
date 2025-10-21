@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
-from core.id_utils import build_id_header
-from modules.shapes.lines.style_utils import append_style_token, format_number, style_dict_to_str
+from mathcha2tikz.utils.id_utils import build_id_header
+from mathcha2tikz.utils.style_utils import append_style_token, format_number, style_dict_to_str
 
 
 class EllipseRenderer:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import List, Optional, Tuple, TypedDict
 
-from modules.shapes.lines.style_utils import (
+from mathcha2tikz.utils.style_utils import (
     STYLE_BLOCK_PATTERN,
     parse_style_blocks,
 )
@@ -11,7 +11,7 @@ from modules.shapes.lines.style_utils import (
 
 logger = logging.getLogger('modules.shapes.lines.curve_parser')
 
-DRAW_PREFIX = r"\draw"
+DRAW_PREFIX = '\draw'
 CONTROL_TOKEN = 'controls'
 AND_TOKEN = 'and'
 SHIFT_TOKEN = 'shift'
@@ -29,7 +29,7 @@ class CurveParser:
     """Parser for Curve Lines raw TikZ blocks.
 
     Responsibilities:
-    - Extract the main curve "\draw" line that contains bezier controls (.. controls .. and ..)
+    - Extract the main curve "\\draw" line that contains bezier controls (.. controls .. and ..)
     - Collect arrow-related commands (lines with shift/rotate) for later processing
     - Parse inline style attributes (currently: color, draw opacity)
 

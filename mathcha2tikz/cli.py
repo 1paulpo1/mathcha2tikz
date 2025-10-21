@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-"""CLI entry point for Mathcha to TikZ Converter."""
-
 from __future__ import annotations
 
 import argparse
@@ -14,39 +11,40 @@ from dataclasses import dataclass, field
 from typing import Dict, Literal
 
 
-# Support running as "python mathcha2tikz/cli.py" and as a package module.
 if __package__ in (None, ""):
     PACKAGE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     if PACKAGE_ROOT not in sys.path:
         sys.path.insert(0, PACKAGE_ROOT)
-    from mathcha2tikz.cli_io import (  # type: ignore[relative-import]
+    from mathcha2tikz.io import (  # type: ignore[relative-import]
         get_stdin_input,
         get_clipboard_input,
         set_clipboard_output,
         get_editor_input,
     )
     from mathcha2tikz.commands import run_conversion, quick_convert  # type: ignore[relative-import]
-    from mathcha2tikz.cli_menus import (  # type: ignore[relative-import]
+    from mathcha2tikz.menus import (  # type: ignore[relative-import]
         settings_menu as settings_menu_impl,
         debug_menu as debug_menu_impl,
         main_menu as main_menu_impl,
     )
+    from mathcha2tikz.__version__ import __version__
 else:
-    from .cli_io import (
+    from .io import (
         get_stdin_input,
         get_clipboard_input,
         set_clipboard_output,
         get_editor_input,
     )
     from .commands import run_conversion, quick_convert
-    from .cli_menus import (
+    from .menus import (
         settings_menu as settings_menu_impl,
         debug_menu as debug_menu_impl,
         main_menu as main_menu_impl,
     )
-logger = logging.getLogger('mathcha2tikz.cli')
+    from .__version__ import __version__
+logger = logging.getLogger('mathcha2tikz.CLI')
 
-VERSION = "0.1.0"
+VERSION = __version__
 
 
 RenderMode = Literal['classic', 'obsidian']

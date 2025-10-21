@@ -14,7 +14,7 @@ from utils.geometry.point_path_operations import (
     split_bezier_into_segments,
     determine_arrow_type,
 )
-from modules.shapes.lines.shared_arrow_logic import (
+from utils.geometry.shared_arrow_logic import (
     extract_arrow_anchor,
     extract_style_block,
     parse_points_from_draw,

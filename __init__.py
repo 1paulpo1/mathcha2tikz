@@ -1,29 +1,27 @@
-"""
-Mathcha to TikZ Converter
+"""Compatibility wrapper for the `mathcha2tikz` package."""
 
-This package converts Mathcha TikZ code to processed TikZ output.
-"""
-
-# Import core components
-from .core.converter import convert, Converter
-
-# Backward-compatible alias
-Pipeline = Converter
-
-# Import exceptions
-from .core.exceptions import (
-    ParserError,
+from .mathcha2tikz import (
+    ConfigurationError,
+    Converter,
     DetectionError,
+    ParserError,
+    Pipeline,
     ProcessingError,
     RenderingError,
-    ConfigurationError
+    __version__,
+    convert,
+    main,
 )
 
-# CLI entry point
-from .mathcha2tikz.cli import main
-
-# Import lexer components
-from .core.lexer import TikzLexer, TokenType, Token
-
-# Package version
-__version__ = "0.1.0"
+__all__ = [
+    "ConfigurationError",
+    "Converter",
+    "DetectionError",
+    "ParserError",
+    "Pipeline",
+    "ProcessingError",
+    "RenderingError",
+    "__version__",
+    "convert",
+    "main",
+]

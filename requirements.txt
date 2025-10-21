@@ -1,11 +1,7 @@
-# Core dependencies
-numpy>=1.21.0
-psutil>=5.8.0
+# Runtime dependencies
+# Keep this file minimal for end users.
+numpy>=1.21
 
-# Development dependencies (optional)
-pytest>=6.0.0
-pytest-cov>=2.10.0
-
-# Type checking (optional)
-mypy>=0.910
-types-psutil>=5.8.0 
+# Optional runtime extras
+# Clipboard integration used by mathcha2tikz/io.py
+pyperclip>=1.8

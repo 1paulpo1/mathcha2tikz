@@ -9,7 +9,8 @@ from core.exceptions import (
     RenderingError,
 )
 
-from .cli import main
+from .CLI import main
+from .__version__ import __version__
 
 # Backward compatibility for older imports
 Pipeline = Converter
@@ -24,6 +25,5 @@ __all__ = [
     "ProcessingError",
     "RenderingError",
     "ConfigurationError",
+    "__version__",
 ]
-
-__version__ = "0.1.0"

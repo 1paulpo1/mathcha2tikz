@@ -1,0 +1,4 @@
+# Maintenance scripts dependencies (not required for end users)
+# Used by utils/maintenance/get_color.py
+requests>=2.31
+beautifulsoup4>=4.12

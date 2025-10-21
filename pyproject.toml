@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mathcha2tikz"
+dynamic = ["version", "readme"]
+description = "Convert Mathcha-exported TikZ into optimized, human-readable TikZ."
+authors = [{ name = "Paul", email = "ptvkzybrf@icloud.com" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.21",
+]
+keywords = ["tikz", "mathcha", "latex", "converter"]
+
+[project.optional-dependencies]
+clipboard = ["pyperclip>=1.8"]
+dev = ["pytest>=7", "pytest-cov>=4", "mypy>=1.8", "ruff>=0.5"]
+
+[project.scripts]
+mathcha2tikz = "mathcha2tikz.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/1paulpo1/mathcha2tikz"
+Repository = "https://github.com/1paulpo1/mathcha2tikz"
+Issues = "https://github.com/1paulpo1/mathcha2tikz/issues"
+Documentation = "https://github.com/1paulpo1/mathcha2tikz#readme"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.dynamic]
+version = { attr = "mathcha2tikz.__version__" }
+readme = { file = ["README.md"], content-type = "text/markdown" }

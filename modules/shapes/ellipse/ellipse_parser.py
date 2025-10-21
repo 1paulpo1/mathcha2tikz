@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, Tuple, TypedDict
 
-from modules.shapes.lines.style_utils import STYLE_BLOCK_PATTERN, parse_style_blocks
+from mathcha2tikz.utils.style_utils import STYLE_BLOCK_PATTERN, parse_style_blocks
 
 
 logger = logging.getLogger('modules.shapes.ellipse.ellipse_parser')
@@ -25,9 +25,9 @@ class EllipseParser:
 
     Returns a tuple ``(main_command, extra_commands, styles_dict)`` where:
 
-    - ``main_command`` — строка ``\draw`` с bezier-контролями и ``-- cycle``
-    - ``extra_commands`` — дополнительные линии (обычно пусто)
-    - ``styles_dict`` — извлечённые inline-стили (color, draw opacity, dash pattern)
+    - ``main_command`` — string ``\draw`` with bezier controls and ``-- cycle``
+    - ``extra_commands`` — additional lines (usually empty)
+    - ``styles_dict`` — extracted inline styles (color, draw opacity, dash pattern)
     """
 
     def parse_shape(self, raw_block: str) -> Tuple[Optional[str], List[str], EllipseStyles]:

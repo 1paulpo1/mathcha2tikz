@@ -1,13 +1,12 @@
 from typing import Dict, Any, List, Optional, TypedDict
 import math
 
-from utils.geometry.point_path_operations import determine_arrow_type
-from modules.shapes.lines.shared_arrow_logic import (
+from utils.geometry.point_path_operations import determine_arrow_type, project_point_on_segment
+from utils.geometry.base_geometry import distance
+from utils.geometry.shared_arrow_logic import (
     extract_arrow_anchor,
     extract_style_block,
     parse_points_from_draw,
-    project_point_on_segment,
-    distance,
     ArrowDirection,
     Point,
 )

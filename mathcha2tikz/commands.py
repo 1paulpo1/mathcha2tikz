@@ -6,7 +6,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from core.converter import Converter
-from .cli_io import (
+from .io import (
     get_stdin_input,
     get_clipboard_input,
     set_clipboard_output,
