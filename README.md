@@ -16,22 +16,16 @@ Convert Mathcha-exported TikZ into clean, optimized TikZ. Supports multiple shap
 ## Quick Start
 
 ```bash
-# Install from the published package
-pip install mathcha2tikz
+# install from Github
+pip install git+https://github.com/paulmathcha2tikz.git
 
-# or, install from a local checkout (editable for development)
-pip install -e .
-# Optional clipboard helpers
-pip install "mathcha2tikz[clipboard]"
+# Useage
+# Option A.
+cd mathcha2tikz
+python CLI.py   # CLI module entry
 
-# CLI (interactive clipboard flow included)
-mathcha2tikz --help
-# or, as a module
-python -m mathcha2tikz.CLI   # canonical
-# python -m mathcha2tikz.cli   # backward-compatible shim
-
-# Python API
-python -c "from mathcha2tikz import convert; print(convert('\\draw (0,0)--(1,1);', mode='classic'))"
+# Option B. 
+mathcha2tikz --help  # see CLI flags for more info
 ```
 
 ### Clipboard support
@@ -83,7 +77,7 @@ See `docs/WORKFLOW.md` for a deeper dive into the pipeline, typing contracts (`S
 
 The converter is broken into a modular pipeline (`Parser → Detector → Processor → Renderer → PostProcessor`).
 
-- **CLI split**: `mathcha2tikz/CLI.py` (entry), `mathcha2tikz/io.py` (clipboard/stdin/editor), `mathcha2tikz/commands.py` (convert commands), `mathcha2tikz/menus.py` (interactive menus). `mathcha2tikz/cli.py` exists as a backward-compatibility shim.
+- **CLI split**: `mathcha2tikz/CLI.py` (entry), `mathcha2tikz/io.py` (clipboard/stdin/editor), `mathcha2tikz/commands.py` (convert commands), `mathcha2tikz/menus.py` (interactive menus).
 - **Lazy bootstrap**: processor and renderer registries are initialized on demand (`ensure_builtin_processors_registered()` / `ensure_builtin_renderers_registered()`), minimizing import side-effects and keeping CLI startup fast.
 - **Strict error handling**: processing/renderer stages raise `ProcessingError` / `RenderingError` on failures instead of hiding warnings, surfacing actionable diagnostics.
 - **Template engine**: output modes (`classic`, `obsidian`) are defined in `core/templates.py` via immutable template constants with dedicated post-processing.
@@ -107,12 +101,12 @@ The converter is broken into a modular pipeline (`Parser → Detector → Proces
 - [ ] Richer styles: pattern (see limitations section) and fill
 - [ ] Dash patterns: extend dictionary; future nearest-match mapping when no exact match
 - [ ] CLI enhancements: degub, module-toggle, etc.
-- [ ] Performance metrics: percentage of compression, processing time, etc.
+- [ ] Performance metrics: compression ratio, processing time, etc.
 
 ## Known Limitations
 
-- Patterns are known to be not supported by Obsidian renderer (as well as many other libs). See [obsidian-tikzjax](https://github.com/artisticat1/obsidian-tikzjax) repository for more info
-- Tested on ~~macOS~~ UNIX-based system only
+- TikZ Library `Patterns` is known to be not supported by Obsidian renderer (as well as many other libs). See [obsidian-tikzjax](https://github.com/artisticat1/obsidian-tikzjax) repository for more info. *It is unlikely to be fixed in the future.*
+- ~~Tested on UNIX-based system only~~
 - Module toggles and pipeline configuration menus are hidden for now
 - Per-module debug UI is hidden; only global debug toggle is available
 - ~~Occasional instability while converting~~ unsupported shapes skipped and not affected

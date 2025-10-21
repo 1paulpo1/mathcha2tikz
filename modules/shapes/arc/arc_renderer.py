@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
-from mathcha2tikz.utils.id_utils import build_id_header
-from mathcha2tikz.utils.style_utils import (
+from utils.id_utils import build_id_header
+from utils.style_utils import (
     apply_arrow_styles,
     append_style_token,
     format_number,

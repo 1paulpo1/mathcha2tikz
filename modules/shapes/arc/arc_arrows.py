@@ -7,7 +7,7 @@ from utils.geometry.point_path_operations import (
     get_tangent_at_point,
     determine_arrow_type as determine_arrow_type_utils,
 )
-from modules.shapes.lines.shared_arrow_logic import Point, ArrowDirection
+from utils.geometry.shared_arrow_logic import Point, ArrowDirection
 
 
 logger = logging.getLogger('modules.shapes.arc.arc_arrows')

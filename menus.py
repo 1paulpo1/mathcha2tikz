@@ -8,7 +8,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .cli import CLIContext
+    from .CLI import CLIContext
 
 logger = logging.getLogger('mathcha2tikz.cli_menus')
 
@@ -83,7 +83,7 @@ def main_menu(context: 'CLIContext') -> None:
         elif choice == "C":
             debug_menu(context)
         elif choice == "D":
-            from .cli import VERSION
+            from .CLI import VERSION
             print(f"\nmathcha2tikz version {VERSION}")
             print("A tool to convert and optimize Mathcha TikZ code.")
             print("Supports various shapes, styles, and arrows.")

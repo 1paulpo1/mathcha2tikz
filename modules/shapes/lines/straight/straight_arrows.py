@@ -15,6 +15,7 @@ from utils.geometry.shared_arrow_logic import (
 ANCHOR_DISTANCE_THRESHOLD = 10.0
 ANCHOR_START_EPSILON = 0.05
 ANCHOR_END_EPSILON = 0.95
+ZERO = 1e-9
 
 
 class StraightMidArrow(TypedDict):
@@ -48,7 +49,7 @@ class StraightArrows:
         path_vec = (end_pt[0] - start_pt[0], end_pt[1] - start_pt[1])
         path_len = math.hypot(path_vec[0], path_vec[1])
 
-        if path_len <= 1e-9:
+        if path_len <= ZERO:
             return {}
 
         arrows_info: StraightArrowInfo = {

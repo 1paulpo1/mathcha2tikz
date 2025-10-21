@@ -14,7 +14,7 @@ from .io import (
 )
 
 if TYPE_CHECKING:  # avoid runtime circular import
-    from .cli import CLIContext
+    from .CLI import CLIContext
 
 logger = logging.getLogger('mathcha2tikz.commands')
 

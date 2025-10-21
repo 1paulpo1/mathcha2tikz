@@ -1,27 +1,37 @@
-"""Compatibility wrapper for the `mathcha2tikz` package."""
+"""Top-level package API for mathcha2tikz (single-root layout).
 
-from .mathcha2tikz import (
+Exports:
+- Converter/convert from core.converter
+- Exception types from core.exceptions
+- CLI main from CLI.main
+- __version__ from __version__
+"""
+
+from __future__ import annotations
+
+from .core.converter import Converter, convert
+from .core.exceptions import (
     ConfigurationError,
-    Converter,
     DetectionError,
     ParserError,
-    Pipeline,
     ProcessingError,
     RenderingError,
-    __version__,
-    convert,
-    main,
 )
+from .CLI import main
+from .__version__ import __version__
+
+# Backward compatibility
+Pipeline = Converter
 
 __all__ = [
-    "ConfigurationError",
     "Converter",
-    "DetectionError",
-    "ParserError",
     "Pipeline",
-    "ProcessingError",
-    "RenderingError",
-    "__version__",
     "convert",
     "main",
+    "ParserError",
+    "DetectionError",
+    "ProcessingError",
+    "RenderingError",
+    "ConfigurationError",
+    "__version__",
 ]

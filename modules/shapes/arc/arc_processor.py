@@ -5,7 +5,11 @@ import logging
 
 from core.exceptions import ProcessingError
 from core.shape_payload import ShapePayload
-from modules.shapes.lines.shared_arrow_logic import Point, parse_points_from_draw, extract_arrow_anchor
+from utils.geometry.shared_arrow_logic import (
+    Point,
+    parse_points_from_draw,
+    extract_arrow_anchor,
+)
 from .arc_parser import ArcParser, ArcStyles
 from .arc_renderer import ArcRenderer
 from .arc_arrows import process_arc_arrows, ArcArrowData, ArcArrowResult

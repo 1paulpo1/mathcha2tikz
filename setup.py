@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 ROOT = Path(__file__).parent
 ABOUT: dict[str, str] = {}
-with (ROOT / "mathcha2tikz" / "__version__.py").open(encoding="utf-8") as fh:
+with (ROOT / "__version__.py").open(encoding="utf-8") as fh:
     exec(fh.read(), ABOUT)
 
 
@@ -44,3 +44,4 @@ setup(
     ],
     python_requires=">=3.8",
 )
+

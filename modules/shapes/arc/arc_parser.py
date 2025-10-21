@@ -3,7 +3,7 @@ import re
 from typing import List, Optional, Tuple, TypedDict
 
 
-from mathcha2tikz.utils.style_utils import STYLE_BLOCK_PATTERN, parse_style_blocks
+from utils.style_utils import STYLE_BLOCK_PATTERN, parse_style_blocks
 
 logger = logging.getLogger('modules.shapes.arc.parser')
 

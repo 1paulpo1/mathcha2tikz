@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from core.exceptions import ProcessingError, RenderingError
 from core.shape_payload import ShapePayload
-from modules.shapes.lines.shared_arrow_logic import parse_points_from_draw
+from utils.geometry.shared_arrow_logic import parse_points_from_draw
 from .ellipse_parser import EllipseParser, EllipseStyles
 from utils.geometry.conics.conic_fitting import main as fit_ellipse
 from .ellipse_renderer import EllipseRenderer

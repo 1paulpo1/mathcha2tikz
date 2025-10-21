@@ -1,13 +1,13 @@
 from typing import Dict, Any, List, Tuple
 
-from mathcha2tikz.utils.style_utils import (
+from utils.style_utils import (
     merge_style_str_with_dict,
     split_style_parts,
     format_number,
     style_dict_to_str,
     apply_arrow_styles,
 )
-from mathcha2tikz.utils.id_utils import build_id_header
+from utils.id_utils import build_id_header
 
 class CurveRenderer:
     def _fmt_num(self, value: float) -> str:

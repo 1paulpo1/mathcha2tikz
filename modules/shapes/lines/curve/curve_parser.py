@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 import logging
 from typing import List, Optional, Tuple, TypedDict
 
-from mathcha2tikz.utils.style_utils import (
+from utils.style_utils import (
     STYLE_BLOCK_PATTERN,
     parse_style_blocks,
 )
@@ -11,7 +10,7 @@ from mathcha2tikz.utils.style_utils import (
 
 logger = logging.getLogger('modules.shapes.lines.curve_parser')
 
-DRAW_PREFIX = '\draw'
+DRAW_PREFIX = r'\draw'
 CONTROL_TOKEN = 'controls'
 AND_TOKEN = 'and'
 SHIFT_TOKEN = 'shift'
