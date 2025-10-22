@@ -28,13 +28,8 @@ python CLI.py   # CLI module entry
 mathcha2tikz --help  # see CLI flags for more info
 ```
 
-### Clipboard support
 
-- **macOS**: built-in `pbpaste`/`pbcopy` used automatically
-- **Windows**: PowerShell `Get-Clipboard`/`Set-Clipboard` used automatically
-- **Linux (Wayland)**: install `wl-clipboard` (`wl-copy`/`wl-paste`)
-- **Linux (X11)**: install `xclip` or `xsel`
-- **WSL**: uses Windows clipboard via `clip.exe` / `powershell.exe`
+## Examples
 
 ![alt text](<docs/screenshots/Screenshot 2025-10-05 at 01.00.01.png>)
 Here are some realworld examples rendered in Obsidian mode:
@@ -69,6 +64,14 @@ Use `--mode classic` to switch.
   - Colors: post-processing via K-D tree for color search with $O(\log N)$ performance
   - Opacity post-processing (removes `draw opacity=1`, preserves others)
   - Dash: post-processing (normalize, dedupe, exact-name conversion via dictionary)
+
+### Clipboard support
+
+- **macOS**: built-in `pbpaste`/`pbcopy` used automatically
+- **Windows**: PowerShell `Get-Clipboard`/`Set-Clipboard` used automatically
+- **Linux (Wayland)**: install `wl-clipboard` (`wl-copy`/`wl-paste`)
+- **Linux (X11)**: install `xclip` or `xsel`
+- **WSL**: uses Windows clipboard via `clip.exe` / `powershell.exe`
 
 ## Architecture
 

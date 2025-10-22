@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, cast
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 import math
 import logging
@@ -6,13 +6,14 @@ import logging
 from core.exceptions import ProcessingError
 from core.shape_payload import ShapePayload
 from utils.geometry.shared_arrow_logic import (
-    Point,
     parse_points_from_draw,
     extract_arrow_anchor,
 )
-from .arc_parser import ArcParser, ArcStyles
+from .arc_parser import ArcParser
 from .arc_renderer import ArcRenderer
 from .arc_arrows import process_arc_arrows, ArcArrowData, ArcArrowResult
+from utils.processing.base_shape_processor import BaseShapeProcessor
+from utils.shapes.types import Point, ArcPayload
 
 from utils.geometry.point_path_operations import (
     split_bezier_into_segments,
@@ -42,24 +43,11 @@ class ArcInput:
     shape_type: Optional[str] = None
 
 
-class ArcProcessedData(TypedDict, total=False):
-    center: Point
-    major_axis: float
-    minor_axis: float
-    rotation: float
-    start_angle: float
-    end_angle: float
-    styles: ArcStyles
-    arrows: ArcArrowResult
-    id: str
-    type: str
-
-
-class ArcProcessor:
+class ArcProcessor(BaseShapeProcessor):
     def __init__(self, shape_instance: Optional[ShapePayload] = None) -> None:
-        self.shape_instance = shape_instance
-        self.parser = ArcParser()
-        self.renderer = ArcRenderer()
+        super().__init__(shape_instance, parser=ArcParser(), renderer=ArcRenderer())
+        # Defer rendering to GlobalRenderer via type='Arc'
+        self.use_inline_renderer = False
 
     def _points_from_main(self, main_command: str) -> List[Point]:
         return parse_points_from_draw(main_command)
@@ -104,27 +92,21 @@ class ArcProcessor:
         }
         return process_arc_arrows(data)
 
-    def process(self, raw_block: Optional[str] = None) -> ArcProcessedData:
-        if self.shape_instance and not raw_block:
-            raw_block = getattr(self.shape_instance, 'raw_block', '') or getattr(self.shape_instance, 'raw_command', '')
+    def process_arrows(self, main: str, arrow_cmds: List[str]) -> Dict[str, Any]:
+        points = self._points_from_main(main)
+        if len(points) < 4:
+            return {}
+        segments = split_bezier_into_segments(points)
+        arrows = self._build_arrow_payload(segments, arrow_cmds)
+        return {'arrows': arrows}
 
-        if not raw_block:
-            return cast(ArcProcessedData, {'tikz_code': raw_block or ''})
-
-        try:
-            main_command, arrow_commands, styles_dict = self.parser.parse_shape(raw_block)
-        except Exception as exc:  # pragma: no cover
-            logger.exception("ArcParser failed")
-            raise ProcessingError("Failed to parse arc block") from exc
-
-        if not main_command:
-            logger.debug("ArcProcessor: no main command, returning passthrough")
-            return cast(ArcProcessedData, {'tikz_code': raw_block})
-
-        points = self._points_from_main(main_command)
+    def build_render_payload(self, main: str, styles: Dict[str, Any], extras: Dict[str, Any]) -> Dict[str, Any]:
+        raw_block = extras.get('_raw_block', '')
+        arrow_cmds = extras.get('_arrow_cmds', [])
+        points = self._points_from_main(main)
         if len(points) < 4:
             logger.debug("ArcProcessor: insufficient points (%d), passthrough", len(points))
-            return cast(ArcProcessedData, {'tikz_code': raw_block})
+            return {'tikz_code': raw_block}
 
         try:
             segments = split_bezier_into_segments(points)
@@ -135,7 +117,7 @@ class ArcProcessor:
         ellipse_points = get_ellipse_points_from_bezier(segments)
         if len(ellipse_points) < 5:
             logger.debug("ArcProcessor: <5 ellipse points (%d), passthrough", len(ellipse_points))
-            return cast(ArcProcessedData, {'tikz_code': raw_block})
+            return {'tikz_code': raw_block}
 
         try:
             coeffs = compute_conic_coefficients(ellipse_points)
@@ -145,7 +127,7 @@ class ArcProcessor:
 
         if not coeffs:
             logger.debug("ArcProcessor: conic coefficient failure, passthrough")
-            return cast(ArcProcessedData, {'tikz_code': raw_block})
+            return {'tikz_code': raw_block}
 
         try:
             params = compute_ellipse_params(*coeffs)
@@ -155,7 +137,7 @@ class ArcProcessor:
 
         if not params:
             logger.debug("ArcProcessor: ellipse params missing, passthrough")
-            return cast(ArcProcessedData, {'tikz_code': raw_block})
+            return {'tikz_code': raw_block}
 
         cx, cy, major, minor, rotation_deg = params
         rotation_rad = math.radians(rotation_deg)
@@ -171,26 +153,20 @@ class ArcProcessor:
 
         start_norm, end_norm, rotation_out = normalize_arc_angles(start_angle_deg, end_angle_deg, rotation_deg)
 
-        arrows = self._build_arrow_payload(segments, arrow_commands)
+        arrows = extras.get('arrows')
+        if not arrows:
+            arrows = self._build_arrow_payload(segments, arrow_cmds)
 
-        processed: ArcProcessedData = {
+        processed: ArcPayload = {
             'center': (cx, cy),
             'major_axis': major,
             'minor_axis': minor,
             'rotation': rotation_out,
             'start_angle': start_norm,
             'end_angle': end_norm,
-            'styles': styles_dict,
+            'styles': styles,
             'arrows': arrows,
             'type': 'Arc',
         }
 
-        if self.shape_instance is not None:
-            shape_id = getattr(self.shape_instance, 'id', None)
-            if shape_id:
-                processed['id'] = shape_id
-
         return processed
-
-    def validate(self) -> bool:
-        return True

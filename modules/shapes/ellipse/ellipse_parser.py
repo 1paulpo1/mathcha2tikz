@@ -1,26 +1,17 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Tuple, TypedDict
+from typing import Dict, List, Optional, Tuple
 
-from utils.style_utils import STYLE_BLOCK_PATTERN, parse_style_blocks
+from utils.parsing.base_parser import BaseParser
 
+
+from utils.shapes.styles import StyleDict
 
 logger = logging.getLogger('modules.shapes.ellipse.ellipse_parser')
 
 
-EllipseStyles = TypedDict(
-    'EllipseStyles',
-    {
-        'color': str,
-        'opacity': float,
-        'dash pattern': str,
-    },
-    total=False,
-)
-
-
-class EllipseParser:
+class EllipseParser(BaseParser):
     r"""Parser for Ellipse/Circle raw TikZ bezier blocks (closed with ``-- cycle``).
 
     Returns a tuple ``(main_command, extra_commands, styles_dict)`` where:
@@ -30,38 +21,17 @@ class EllipseParser:
     - ``styles_dict`` — extracted inline styles (color, draw opacity, dash pattern)
     """
 
-    def parse_shape(self, raw_block: str) -> Tuple[Optional[str], List[str], EllipseStyles]:
-        lines = raw_block.strip().split('\n')
+    def __init__(self) -> None:
+        super().__init__(require_bezier=True, require_closed=True, exclude_opacity_zero=False)
 
-        main_command: Optional[str] = None
-        extra_commands: List[str] = []
-        styles_dict: EllipseStyles = EllipseStyles()
-
-        for raw_line in lines:
-            s = raw_line.strip()
-            if not s or s.startswith('%'):
-                continue
-
-            if not s.startswith(r'\draw'):
-                continue
-
-            # Extract styles
-            style_blocks = STYLE_BLOCK_PATTERN.findall(s)
-            if style_blocks:
-                parsed = parse_style_blocks(style_blocks)
-                styles_dict.update(parsed)  # type: ignore[arg-type]
-
-            # Identify main closed bezier command
-            if ('..' in s and 'controls' in s and 'and' in s and '-- cycle' in s):
-                if main_command is None:
-                    main_command = s
-            else:
-                # Keep other draw lines if needed in future
-                if s != main_command:
-                    extra_commands.append(s)
+    def parse_shape(self, raw_block: str) -> Tuple[Optional[str], List[str], StyleDict]:
+        main_command, arrow_commands, styles = super().parse_shape(raw_block)
+        styles_dict: StyleDict = StyleDict()
+        if styles:
+            styles_dict.update(styles)  # type: ignore[arg-type]
 
         if main_command is None:
             logger.debug("No main ellipse command found in block")
 
-        return main_command, extra_commands, styles_dict
+        return main_command, arrow_commands, styles_dict
 

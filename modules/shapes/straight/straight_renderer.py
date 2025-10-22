@@ -1,24 +1,13 @@
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any
 
-from utils.style_utils import (
-    merge_style_str_with_dict,
-    split_style_parts,
-    format_number,
-    style_dict_to_str,
-    apply_arrow_styles,
-)
-from utils.id_utils import build_id_header
+from utils.rendering.base_renderer import BaseRenderer
+from utils.style_utils import split_style_parts
+from utils.rendering.path_builder import build_line_coords
 
-class StraightRenderer:
 
-    def _fmt_num(self, value: Any) -> str:
-        return format_number(value)
+class StraightRenderer(BaseRenderer):
 
-    def _style_from_dict(self, styles: Dict[str, Any]) -> str:
-        return style_dict_to_str(styles, self._fmt_num)
-
-    def _build_id_header(self, shape_id: Optional[str], raw: str = '') -> str:
-        return build_id_header("Straight Lines", shape_id, raw)
+    shape_label = "Straight Lines"
 
     def render(self, processed_data: dict) -> dict:
         """
@@ -30,8 +19,9 @@ class StraightRenderer:
         Returns:
             Dictionary with the generated TikZ code
         """
-        if 'raw' in processed_data:
-            return {'tikz_code': processed_data['raw']}
+        passthrough = self.passthrough(processed_data)
+        if passthrough:
+            return passthrough
         
         # If tikz_code is already processed, return it
         if 'tikz_code' in processed_data:
@@ -41,27 +31,20 @@ class StraightRenderer:
         style_str = processed_data.get('style_str', '')
         styles_dict = processed_data.get('styles') or {}
         if styles_dict:
-            style_str = merge_style_str_with_dict(style_str, styles_dict, self._fmt_num)
+            style_str = self.merge_styles(style_str, styles_dict)
         start_point = processed_data.get('start_point', (0, 0))
         end_point = processed_data.get('end_point', (0, 0))
         
         # Process arrow styles
-        style_str = apply_arrow_styles(style_str, processed_data)
+        style_str = self.apply_arrows(style_str, processed_data)
         
-        # Format coordinates
-        def format_coord(coord):
-            if isinstance(coord, (int, float)):
-                return f"{int(coord) if isinstance(coord, float) and coord.is_integer() else coord}"
-            return f"{int(coord[0]) if isinstance(coord[0], float) and coord[0].is_integer() else coord[0]}, {int(coord[1]) if isinstance(coord[1], float) and coord[1].is_integer() else coord[1]}"
-        
-        start_str = f"({format_coord(start_point)})"
-        end_str = f"({format_coord(end_point)})"
+        # Build line path
+        line_path = build_line_coords(start_point, end_point, self._format_point)
         
         # Format ID comment - only add if not already present in the raw data
-        # TODO: refactor ID comment logic making unified comment module for all shapes
         id_line = ""
         if 'id' in processed_data and processed_data['id'] and 'raw' not in processed_data:
-            id_line = self._build_id_header(processed_data['id'], processed_data.get('raw', ''))
+            id_line = self.id_header(processed_data['id'], processed_data.get('raw', ''))
         
         # Process styles to match expected format
         arrow_tokens = {'->', '>-', '-<', '<-', '<->', '<<-', '->>', '>->', '<-<', '<->>', '<<>>'} # TODO: needs refactor based on real arrow tokens
@@ -98,10 +81,10 @@ class StraightRenderer:
             style_str = style_str or ''
         
         # Build the final command with proper spacing
-        command = f"{id_line}\\draw{style_str} {start_str} -- {end_str};"
+        command = f"{id_line}\\draw{style_str} {line_path};"
         
         # If no styles, add some spacing for better readability
         if not style_str and 'raw' in processed_data and '    ' in processed_data['raw']:
-            command = f"{id_line}\\draw    {start_str} -- {end_str} ;"
+            command = f"{id_line}\\draw    {line_path} ;"
         
         return {'tikz_code': command}

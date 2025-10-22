@@ -293,9 +293,9 @@ def register_builtin_processors():
     """Register all built-in processors with the registry."""
     try:
         # Import straight line processor
-        from modules.shapes.lines.straight.straight_processor import StraightProcessor
+        from modules.shapes.straight.straight_processor import StraightProcessor
         # Import curve line processor
-        from modules.shapes.lines.curve.curve_processor import CurveProcessor
+        from modules.shapes.curve.curve_processor import CurveProcessor
         # Import ellipse/circle processor
         from modules.shapes.ellipse.ellipse_processor import EllipseProcessor
         # Import arc processor

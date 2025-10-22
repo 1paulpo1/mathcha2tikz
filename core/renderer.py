@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Type, Optional
 import logging
 import re
 from .exceptions import RenderingError
-from .output_modes import apply_template
+from .templates import apply_template
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -131,7 +131,7 @@ class GlobalRenderer:
     def _initialize_helpers(self):
         """Initialize helper processors for special rendering tasks."""
         try:
-            from modules.shapes.lines.straight.straight_arrows import StraightArrows
+            from modules.shapes.straight.straight_arrows import StraightArrows
             self._helper_processors['arrows'] = StraightArrows()
         except ImportError as e:
             logger.warning(f"Could not import arrow processor: {e}")
@@ -442,7 +442,7 @@ _BUILTIN_RENDERERS_REGISTERED = False
 def register_builtin_renderers():
     """Register all built-in renderers with the registry."""
     try:
-        from modules.shapes.lines.straight.straight_renderer import StraightRenderer
+        from modules.shapes.straight.straight_renderer import StraightRenderer
         from modules.shapes.ellipse.ellipse_renderer import EllipseRenderer
         from modules.shapes.arc.arc_renderer import ArcRenderer
 

@@ -8,21 +8,20 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, cast
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 
 from core.exceptions import ProcessingError, RenderingError
 from core.shape_payload import ShapePayload
 from utils.geometry.shared_arrow_logic import parse_points_from_draw
-from .ellipse_parser import EllipseParser, EllipseStyles
+from .ellipse_parser import EllipseParser
 from utils.geometry.conics.conic_fitting import main as fit_ellipse
 from .ellipse_renderer import EllipseRenderer
+from utils.processing.base_shape_processor import BaseShapeProcessor
+from utils.shapes.types import Point, EllipsePayload
 
 
 logger = logging.getLogger('modules.shapes.ellipse.ellipse_processor')
-
-
-Point = Tuple[float, float]
 
 
 @dataclass
@@ -37,32 +36,10 @@ class EllipseInput:
     annotation: Optional[str] = None
     shape_type: Optional[str] = None
 
-
-class EllipseRenderInput(TypedDict, total=False):
-    center: Point
-    major_axis: float
-    minor_axis: float
-    rotation: float
-    is_circle: bool
-    styles: EllipseStyles
-    id: str
-
-
-class EllipseProcessResult(TypedDict, total=False):
-    tikz_code: str
-    center: Point
-    major_axis: float
-    minor_axis: float
-    rotation: float
-    is_circle: bool
-    id: str
-
-
-class EllipseProcessor:
+class EllipseProcessor(BaseShapeProcessor):
     def __init__(self, shape_instance: Optional[ShapePayload] = None) -> None:
-        self.shape_instance = shape_instance
-        self.parser = EllipseParser()
-        self.renderer = EllipseRenderer()
+        super().__init__(shape_instance, parser=EllipseParser(), renderer=EllipseRenderer())
+        self.default_type = 'Ellipse'
 
     def _points_from_main(self, main_command: str) -> List[Point]:
         raw_points = parse_points_from_draw(main_command)
@@ -117,28 +94,14 @@ class EllipseProcessor:
 
         return center, major, minor, rotation, is_circle
 
-    def process(self, raw_block: Optional[str] = None) -> EllipseProcessResult:
-        """Process a raw block of ellipse/circle code."""
-        if self.shape_instance and not raw_block:
-            raw_block = getattr(self.shape_instance, 'raw_block', '')
+    def process_arrows(self, main: str, arrow_cmds: List[str]) -> Dict[str, Any]:
+        return {}
 
-        if not raw_block:
-            return cast(EllipseProcessResult, {'tikz_code': raw_block or ''})
-
-        try:
-            main_command, _extra_commands, styles_dict = self.parser.parse_shape(raw_block)
-        except Exception as exc:  # pragma: no cover - unexpected parser errors
-            logger.exception("Failed to parse ellipse block")
-            raise ProcessingError("Failed to parse ellipse block") from exc
-
-        if not main_command:
-            logger.debug("No main ellipse command found; returning raw block")
-            return cast(EllipseProcessResult, {'tikz_code': raw_block})
-
-        points = self._points_from_main(main_command)
+    def build_render_payload(self, main: str, styles: Dict[str, Any], extras: Dict[str, Any]) -> Dict[str, Any]:
+        points = self._points_from_main(main)
         if len(points) < 4:
             logger.debug("Not enough points for ellipse fitting; returning raw block")
-            return cast(EllipseProcessResult, {'tikz_code': raw_block})
+            return {'raw': extras.get('_raw_block', '')}
 
         try:
             fit_result = fit_ellipse(str(points))
@@ -148,48 +111,35 @@ class EllipseProcessor:
 
         if isinstance(fit_result, str):
             logger.debug("Ellipse fitting returned error: %s", fit_result)
-            return cast(EllipseProcessResult, {'tikz_code': raw_block})
+            return {'raw': extras.get('_raw_block', '')}
 
         validated = self._validate_fit_output(fit_result)
         if not validated:
             logger.debug("Invalid fit result; returning raw block: %s", fit_result)
-            return cast(EllipseProcessResult, {'tikz_code': raw_block})
+            return {'raw': extras.get('_raw_block', '')}
 
         center, major, minor, rotation, is_circle = validated
 
-        processed: EllipseRenderInput = {
+        processed: EllipsePayload = {
             'center': center,
             'major_axis': major,
             'minor_axis': minor,
             'rotation': rotation,
             'is_circle': is_circle,
         }
+        if styles:
+            processed['styles'] = styles  # type: ignore[assignment]
+        return processed
 
-        if styles_dict:
-            processed['styles'] = styles_dict
-
-        if self.shape_instance is not None:
-            shape_id = getattr(self.shape_instance, 'id', None)
-            if shape_id:
-                processed['id'] = shape_id
-
-        try:
-            rendered = cast(EllipseProcessResult, self.renderer.render(processed))
-        except Exception as exc:  # pragma: no cover
-            logger.exception("Failed to render ellipse")
-            raise RenderingError("Failed to render ellipse") from exc
-
-        result: EllipseProcessResult = dict(rendered)
-        result['center'] = center
-        result['major_axis'] = major
-        result['minor_axis'] = minor
-        result['rotation'] = rotation
-        result['is_circle'] = processed['is_circle']
-        if 'id' in processed:
-            result['id'] = processed['id']
-
+    def post_process(self, payload: Dict[str, Any], extras: Dict[str, Any], result: Dict[str, Any]) -> Dict[str, Any]:
+        center = payload.get('center')
+        if center is not None:
+            result['center'] = center
+        for key in ('major_axis', 'minor_axis', 'rotation', 'is_circle', 'id'):
+            if key in payload:
+                result[key] = payload[key]
+        # Shape type telemetry (only if we have fit result)
+        if 'is_circle' in payload:
+            result['type'] = 'Circle' if payload.get('is_circle') else 'Ellipse'
         return result
-
-    def validate(self) -> bool:
-        return True
 

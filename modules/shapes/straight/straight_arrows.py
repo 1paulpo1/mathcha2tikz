@@ -7,9 +7,9 @@ from utils.geometry.shared_arrow_logic import (
     extract_arrow_anchor,
     extract_style_block,
     parse_points_from_draw,
-    ArrowDirection,
     Point,
 )
+from utils.arrows.types import ArrowDirection, MidArrow
 
 
 ANCHOR_DISTANCE_THRESHOLD = 10.0
@@ -18,15 +18,10 @@ ANCHOR_END_EPSILON = 0.95
 ZERO = 1e-9
 
 
-class StraightMidArrow(TypedDict):
-    position: float
-    direction: ArrowDirection
-
-
 class StraightArrowInfo(TypedDict, total=False):
     start_arrow: Optional[ArrowDirection]
     end_arrow: Optional[ArrowDirection]
-    mid_arrows: List[StraightMidArrow]
+    mid_arrows: List[MidArrow]
     style_str: str
     start_point: Point
     end_point: Point

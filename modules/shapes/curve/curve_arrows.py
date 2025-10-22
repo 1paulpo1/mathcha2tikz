@@ -21,23 +21,19 @@ from utils.geometry.shared_arrow_logic import (
     Point,
 )
 from utils.geometry.base_geometry import distance
+from utils.arrows.types import MidArrow, ArrowDirection
 
 
 
-logger = logging.getLogger('modules.shapes.lines.curve_arrows')
+logger = logging.getLogger('modules.shapes.curve_arrows')
 
 START_END_DISTANCE_THRESHOLD = 10.0
 LENGTH_EPSILON = 1e-9
 
 
-class MidArrow(TypedDict):
-    position: float
-    direction: str
-
-
 class CurveArrowInfo(TypedDict, total=False):
-    start_arrow: Optional[str]
-    end_arrow: Optional[str]
+    start_arrow: Optional[ArrowDirection]
+    end_arrow: Optional[ArrowDirection]
     mid_arrows: List[MidArrow]
     style_str: str
     start_point: Point
