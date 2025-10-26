@@ -16,8 +16,9 @@ Convert Mathcha-exported TikZ into clean, optimized TikZ. Supports multiple shap
 ## Quick Start
 
 ```bash
-# install from Github
-pip install git+https://github.com/paulmathcha2tikz.git
+# clone form Github & install requirements
+git clone https://github.com/1paulpo1/mathcha2tikz.git
+pip install -r requirements.txt
 
 # Useage
 # Option A.
@@ -25,7 +26,7 @@ cd mathcha2tikz
 python CLI.py   # CLI module entry
 
 # Option B. 
-mathcha2tikz --help  # see CLI flags for more info
+mathcha2tikz --help  # see flags for more info
 ```
 
 

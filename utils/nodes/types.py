@@ -21,6 +21,7 @@ class Anchor(TypedDict, total=False):
     kind: Literal['start', 'end', 'center', 'mid', 'other']
     shape_type: str
     shape_id: Optional[str]
+    style_weight: int
 
 
 class NodePlacement(TypedDict, total=False):

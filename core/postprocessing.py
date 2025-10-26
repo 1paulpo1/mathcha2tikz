@@ -18,7 +18,7 @@ class PostProcessor:
         """Apply postprocessors and return intermediate result."""
         try:
             color_definitions, processed_body = self._apply_color_postprocessor(output)
-        except Exception as exc:  # noqa: BLE001 - want to return original output
+        except Exception as exc:  # noqa: BLE001 - return original output
             self._logger.warning(
                 "Color post-processing failed, using original output: %s", exc
             )

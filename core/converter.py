@@ -96,18 +96,25 @@ class Converter:
 
             try:
                 if nodes_list:
-                    from utils.nodes.anchors import collect_anchors_from_tikz_parts
+                    from utils.nodes.anchors import collect_anchors_from_tikz_parts, extract_path_segments
                     from modules.nodes.node_placer import NodePlacer
 
                     tikz_parts = processed_body.splitlines()
                     anchors = collect_anchors_from_tikz_parts(tikz_parts, nodes_list, start_index=0)
+                    segments_by_line = extract_path_segments(tikz_parts)
 
                     nodes_cfg = (renderer_cfg or {}).get('nodes', {}) if isinstance(renderer_cfg, dict) else {}
                     max_distance = nodes_cfg.get('max_distance') if isinstance(nodes_cfg, dict) else None
                     if not isinstance(max_distance, (int, float)):
                         max_distance = None
 
-                    placements = NodePlacer().place_nodes(nodes_list, anchors, max_distance=max_distance)
+                    placements = NodePlacer().place_nodes(
+                        nodes_list,
+                        anchors,
+                        max_distance=max_distance,
+                        allowed_types=('path',),
+                        segments_by_line=segments_by_line,
+                    )
 
                     def _inject_snippet(draw_code: str, snippet: str) -> str:
                         if not draw_code:

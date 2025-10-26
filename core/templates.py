@@ -19,7 +19,9 @@ def _obsidian_post_process(content: str) -> str:
     return (
         "% Setup\n"
         "\\usetikzlibrary{arrows.meta, decorations.markings, bending}\n"
-        "\\tikzset{>={Stealth[length=6pt, width=4pt, bend]}}\n\n"
+        "\\tikzset{>={Stealth[length=6pt, width=4pt, bend]}}\n"
+        "% Uncomment to set all nodes color to black\n"
+        "%\\tikzset{node/.style={color=black}}\n\n"
         "\\begin{document}\n"
         f"{content}\n"
         "\\end{document}"
@@ -32,6 +34,8 @@ TEMPLATES: Dict[str, TemplateDict] = {
             "% copy to preamble",
             "% \\usetikzlibrary{arrows.meta, decorations.markings, bending}",
             "% \\tikzset{>={Stealth[length=6pt, width=4pt, bend]}}",
+            "% Uncomment to set all nodes color to black",
+            "% \\tikzset{node/.style={color=black}}",
             "% Classic Mode - Optimized TikZ Output",
             "",
         ],
